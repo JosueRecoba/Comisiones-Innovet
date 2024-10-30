@@ -1,0 +1,18 @@
+<!-- templates/comisiones/cliente_list.html --> 
+{% extends 'comisiones/base.html' %}
+
+{% block title %}Lista de Clientes{% endblock %}
+
+{% block content %}
+    <h1>Lista de Clientes</h1>
+    <a href="{% url 'cliente-create' %}">Agregar Nuevo Cliente</a>
+    <ul>
+        {% for cliente in clientes %}
+            <li>
+                <a href="{% url 'cliente-detail' cliente.id %}">{{ cliente.nombre }}</a>
+                <a href="{% url 'cliente-update' cliente.id %}">Editar</a>
+                <a href="{% url 'cliente-delete' cliente.id %}">Eliminar</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

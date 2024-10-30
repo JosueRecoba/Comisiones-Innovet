@@ -1,0 +1,32 @@
+<!-- templates/comisiones/base.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Comisiones{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+     <!-- Encabezado -->
+    <header>
+        <div class="header-container">
+            <h1 class="title"></h1>
+        </div>
+    </header>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <ul>
+            <li><a href="{% url 'producto-list' %}">Lista de Productos</a></li>
+            <li><a href="{% url 'cliente-list' %}">Lista de Clientes</a></li>
+            <li><a href="{% url 'producto-list' %}">Calcular Comision</a></li>
+        </ul>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

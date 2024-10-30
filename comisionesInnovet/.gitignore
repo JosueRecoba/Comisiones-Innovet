@@ -1,0 +1,23 @@
+# Entorno virtual
+venv/
+*.pyc
+__pycache__/
+
+# Archivos de configuración 
+.env
+
+# Base de datos SQLite
+db.sqlite3
+
+# Archivos de migración 
+comisiones/migrations/
+comisiones/__pycache__/
+comisionesInnovet/__pycache__/
+
+# Archivos de log
+*.log
+
+# Archivos de configuración del sistema operativo
+.DS_Store
+Thumbs.db
+
