@@ -6,20 +6,18 @@
     <meta charset="UTF-8">
     <title>{% block title %}Comisiones{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="icon" href="{% static 'Logo-INN.png' %}" type="image/x-icon">
 </head>
 <body>
      <!-- Encabezado -->
     <header>
-        <div class="header-container">
-            <h1 class="title"></h1>
-        </div>
+        
     </header>
     <!-- Sidebar -->
     <div class="sidebar">
         <ul>
-            <li><a href="{% url 'producto-list' %}">Lista de Productos</a></li>
             <li><a href="{% url 'cliente-list' %}">Lista de Clientes</a></li>
-            <li><a href="{% url 'producto-list' %}">Calcular Comision</a></li>
+            <li><a href="{% url 'calcular-comisiones' %}">Calcular Comision</a></li>
         </ul>
     </div>
 
