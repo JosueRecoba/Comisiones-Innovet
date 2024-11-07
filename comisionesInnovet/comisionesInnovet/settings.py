@@ -44,8 +44,9 @@ INSTALLED_APPS = [
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
-LOGIN_REDIRECT_URL = '/' 
+LOGIN_REDIRECT_URL = '/comisiones/dashboard/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

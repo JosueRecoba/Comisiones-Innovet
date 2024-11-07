@@ -1,9 +1,9 @@
 # views.py
 
 from django.shortcuts import render, get_object_or_404
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.urls import reverse_lazy
-from .models import Cliente, Producto, Vendedor, Compra  # Importar todos los modelos necesarios
+from .models import Cliente, Producto, Vendedor, Compra 
 
 # Vista para listar todos los clientes
 class ClienteListView(ListView):
@@ -136,3 +136,6 @@ def calcular_comisiones(request):
         "comision": comision,
     }
     return render(request, "comisiones/calcular_comisiones.html", context)
+
+class DashboardView(TemplateView):
+    template_name = 'comisiones/dashboard.html' 

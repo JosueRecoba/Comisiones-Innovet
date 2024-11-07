@@ -1,4 +1,5 @@
 from django.urls import path
+from . import views
 from .views import (
     ClienteListView, ClienteDetailView, ClienteCreateView, 
     ClienteUpdateView, ClienteDeleteView, 
@@ -6,7 +7,7 @@ from .views import (
     ProductoUpdateView, ProductoDeleteView,
     CompraListView, CompraDetailView, CompraCreateView,
     CompraUpdateView, CompraDeleteView,
-    calcular_comisiones,
+    calcular_comisiones,  DashboardView
 )
 
 urlpatterns = [
@@ -26,4 +27,5 @@ urlpatterns = [
     path('compras/<int:pk>/editar/', CompraUpdateView.as_view(), name='compra-update'),
     path('compras/<int:pk>/eliminar/', CompraDeleteView.as_view(), name='compra-delete'),
     path('calcular-comisiones/', calcular_comisiones, name='calcular-comisiones'),
+    path('dashboard/', DashboardView.as_view(), name='dashboard'),
 ]
