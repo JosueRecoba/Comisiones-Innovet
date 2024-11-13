@@ -127,7 +127,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
-    BASE_DIR / 'comiciones/static',
+    BASE_DIR / 'comisiones/static',
     BASE_DIR / "comisiones" / "img",
 ]
 
