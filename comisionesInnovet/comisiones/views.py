@@ -21,14 +21,14 @@ class ClienteDetailView(DetailView):
 class ClienteCreateView(CreateView):
     model = Cliente
     template_name = 'comisiones/cliente_form.html'  
-    fields = ['nombre', 'tipo_cliente']  
+    fields = ['nombre']  
     success_url = reverse_lazy('cliente-list')
 
 # Vista para actualizar un cliente
 class ClienteUpdateView(UpdateView):
     model = Cliente
     template_name = 'comisiones/cliente_form.html'  
-    fields = ['nombre', 'tipo_cliente']
+    fields = ['nombre']
     success_url = reverse_lazy('cliente-list')
 
 # Vista para eliminar un cliente

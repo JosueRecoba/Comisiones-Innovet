@@ -93,7 +93,7 @@ class Compra(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Al guardar la compra, actualizamos el estado del cliente si es necesario.
+        Al guardar la compra, actualizamos el estado del cliente.
         """
         super().save(*args, **kwargs)
         self.cliente.compras_realizadas += 1
