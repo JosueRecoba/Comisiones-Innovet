@@ -50,12 +50,13 @@ class Cliente(models.Model):
 
 
 class Producto(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     nombre = models.TextField()
     tipo_producto = models.CharField(max_length=1, choices=PRODUCTO_TIPO_CHOICES, default='B')
     precio = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f'{self.nombre} ({self.tipo_producto})'
+        return f'{self.nombre} ({self.cliente.nombre})'
 
 
 class Vendedor(models.Model):
@@ -113,7 +114,7 @@ class ClienteProducto(models.Model):
 
 
 class Factura(models.Model):
-    folio = models.CharField(max_length=20, unique=True)
+    folio = models.CharField(max_length=20, unique=True, db_index=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     estatus = models.CharField(max_length=10, choices=ESTATUS_FACTURA_CHOICES, default='Emitida')
     subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)

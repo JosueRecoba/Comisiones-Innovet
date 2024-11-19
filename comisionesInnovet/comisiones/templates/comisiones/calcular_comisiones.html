@@ -5,48 +5,82 @@
 {% block content %}
 <div class="calcular-comisiones-container">
     <h2>Calcular Comisiones</h2>
-    <form method="POST" class="comision-form">
+    
+    <!-- Formulario para seleccionar el folio -->
+    <form method="POST" id="calcularComisionesForm" class="comision-form">
         {% csrf_token %}
-
         <div class="form-group">
-            <label for="vendedor">Selecciona Vendedor:</label>
-            <select id="vendedor" name="vendedor">
-                {% for vendedor in vendedores %}
-                    <option value="{{ vendedor.id }}">{{ vendedor.nombre }}</option>
+            <label for="folio">Selecciona Folio:</label>
+            <select id="folio" name="folio" onchange="cargarDatosFolio()">
+                <option value="">Seleccione un Folio</option>
+                {% for factura in facturas %}
+                <option value="{{ factura.id }}">{{ factura.folio }}</option>
                 {% endfor %}
             </select>
         </div>
-
-        <div class="form-group">
-            <label for="cliente">Selecciona Cliente:</label>
-            <select id="cliente" name="cliente">
-                {% for cliente in clientes %}
-                    <option value="{{ cliente.id }}">{{ cliente.nombre }} ({{ cliente.get_tipo_cliente_display }})</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="producto">Selecciona Producto:</label>
-            <select id="producto" name="producto">
-                {% for producto in productos %}
-                    <option value="{{ producto.id }}">{{ producto.nombre }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="cantidad">Cantidad:</label>
-            <input type="number" id="cantidad" name="cantidad" min="1" value="1" required>
-        </div>
-
-        <button type="submit" class="btn-calcular">Calcular Comisión</button>
     </form>
 
-    {% if resultado %}
-        <div class="resultado">
-            <h3>Resultado de la Comisión: ${{ resultado|floatformat:2 }}</h3>
+    <!-- Sección para mostrar los datos del folio -->
+    <div id="datos-comision" style="display:none; margin-top: 20px;">
+        <div class="form-group">
+            <label for="cliente">Cliente:</label>
+            <input type="text" id="cliente" name="cliente" readonly>
         </div>
-    {% endif %}
+        <div class="form-group">
+            <label for="estatus">Estatus de la Factura:</label>
+            <input type="text" id="estatus" name="estatus" readonly>
+        </div>
+        <div class="form-group">
+            <label for="subtotal">Subtotal:</label>
+            <input type="text" id="subtotal" name="subtotal" readonly>
+        </div>
+        <div class="form-group">
+            <label for="comision">Comisión:</label>
+            <input type="text" id="comision" name="comision" readonly>
+        </div>
+        <div class="form-group">
+            <label for="vendedor">Vendedor:</label>
+            <input type="text" id="vendedor" name="vendedor" readonly>
+        </div>
+    </div>
 </div>
+
+<script>
+    // Función para cargar los datos del folio seleccionado
+    function cargarDatosFolio() {
+        const folioId = document.getElementById('folio').value;
+
+        if (folioId) {
+            // Realizar la solicitud al servidor
+            fetch(`/comisiones/calcular-comisiones/${folioId}/`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener los datos del folio.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Mostrar los datos en los campos correspondientes
+                document.getElementById('datos-comision').style.display = 'block';
+                document.getElementById('cliente').value = data.cliente || 'N/A';
+                document.getElementById('estatus').value = data.estatus || 'N/A';
+                document.getElementById('subtotal').value = data.subtotal || '0.00';
+                document.getElementById('comision').value = data.comision || '0.00';
+                document.getElementById('vendedor').value = data.vendedor || 'N/A';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Hubo un problema al cargar los datos del folio. Por favor, intenta de nuevo.');
+            });
+        } else {
+            // Si no hay folio seleccionado, ocultar la sección de datos
+            document.getElementById('datos-comision').style.display = 'none';
+        }
+    }
+</script>
 {% endblock %}
