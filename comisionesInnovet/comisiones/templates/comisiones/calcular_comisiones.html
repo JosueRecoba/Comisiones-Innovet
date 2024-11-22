@@ -3,84 +3,52 @@
 {% block title %}Calcular Comisiones{% endblock %}
 
 {% block content %}
-<div class="calcular-comisiones-container">
-    <h2>Calcular Comisiones</h2>
-    
-    <!-- Formulario para seleccionar el folio -->
-    <form method="POST" id="calcularComisionesForm" class="comision-form">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="folio">Selecciona Folio:</label>
-            <select id="folio" name="folio" onchange="cargarDatosFolio()">
-                <option value="">Seleccione un Folio</option>
-                {% for factura in facturas %}
-                <option value="{{ factura.id }}">{{ factura.folio }}</option>
-                {% endfor %}
-            </select>
-        </div>
-    </form>
+<h1>Calcular Comisiones</h1>
+<form method="get">
+    <label for="cliente">Cliente:</label>
+    <select name="cliente" id="cliente">
+        <option value="">Seleccionar Cliente</option>
+        {% for cliente in clientes %}
+        <option value="{{ cliente.id }}">{{ cliente.nombre }}</option>
+        {% endfor %}
+    </select>
 
-    <!-- Sección para mostrar los datos del folio -->
-    <div id="datos-comision" style="display:none; margin-top: 20px;">
-        <div class="form-group">
-            <label for="cliente">Cliente:</label>
-            <input type="text" id="cliente" name="cliente" readonly>
-        </div>
-        <div class="form-group">
-            <label for="estatus">Estatus de la Factura:</label>
-            <input type="text" id="estatus" name="estatus" readonly>
-        </div>
-        <div class="form-group">
-            <label for="subtotal">Subtotal:</label>
-            <input type="text" id="subtotal" name="subtotal" readonly>
-        </div>
-        <div class="form-group">
-            <label for="comision">Comisión:</label>
-            <input type="text" id="comision" name="comision" readonly>
-        </div>
-        <div class="form-group">
-            <label for="vendedor">Vendedor:</label>
-            <input type="text" id="vendedor" name="vendedor" readonly>
-        </div>
-    </div>
-</div>
+    <label for="fecha_inicio">Fecha Inicio:</label>
+    <input type="date" name="fecha_inicio" id="fecha_inicio" value="{{ fecha_inicio }}">
+
+    <label for="fecha_fin">Fecha Fin:</label>
+    <input type="date" name="fecha_fin" id="fecha_fin" value="{{ fecha_fin }}">
+
+    <button type="submit">Filtrar</button>
+</form>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Factura</th>
+            <th>Vendedor</th>
+            <th>Sub Total</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for factura in facturas %}
+        <tr>
+            <td>{{ factura.id }}</td>
+            <td>{{ factura.cliente.vendedor.nombre }}</td>
+            <td>${{ factura.subtotal }}</td>
+            <td>
+                <button onclick="calcular({{ factura.id }})">Calcular</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 <script>
-    // Función para cargar los datos del folio seleccionado
-    function cargarDatosFolio() {
-        const folioId = document.getElementById('folio').value;
-
-        if (folioId) {
-            // Realizar la solicitud al servidor
-            fetch(`/comisiones/calcular-comisiones/${folioId}/`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error al obtener los datos del folio.');
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Mostrar los datos en los campos correspondientes
-                document.getElementById('datos-comision').style.display = 'block';
-                document.getElementById('cliente').value = data.cliente || 'N/A';
-                document.getElementById('estatus').value = data.estatus || 'N/A';
-                document.getElementById('subtotal').value = data.subtotal || '0.00';
-                document.getElementById('comision').value = data.comision || '0.00';
-                document.getElementById('vendedor').value = data.vendedor || 'N/A';
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Hubo un problema al cargar los datos del folio. Por favor, intenta de nuevo.');
-            });
-        } else {
-            // Si no hay folio seleccionado, ocultar la sección de datos
-            document.getElementById('datos-comision').style.display = 'none';
-        }
+    function calcular(facturaId) {
+        alert('Calculando comisiones para factura ' + facturaId);
+        // Aquí puedes enviar una solicitud Ajax si deseas calcular comisiones de forma dinámica.
     }
 </script>
 {% endblock %}

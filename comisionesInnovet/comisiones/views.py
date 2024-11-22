@@ -1,10 +1,15 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
+from django.db.models import Q
+from django.db.models import Sum, F, DecimalField, ExpressionWrapper
+from django.utils.dateparse import parse_date
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.urls import reverse_lazy
 from .models import Cliente, Producto, Vendedor, Compra, Factura, ClienteProducto, Comision
 from decimal import Decimal
+from datetime import datetime
+
 
 # Vista para listar todos los clientes
 class ClienteListView(ListView):
@@ -109,37 +114,77 @@ class CompraDeleteView(DeleteView):
     template_name = 'comisiones/compra_confirm_delete.html'
     success_url = reverse_lazy('compra-list')
 
-# Nueva vista para calcular comisiones
-def calcular_comisiones_view(request):
-    if request.method == 'GET':
-        facturas = Factura.objects.all()
-        # Renderiza el formulario para seleccionar el folio
-        return render(request, 'comisiones/calcular_comisiones.html', {'facturas': facturas})
+# vista para calcular comisiones
+def calcular_comisiones(request):
+    # Obtener filtros del usuario
+    cliente_id = request.GET.get('cliente')
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
 
-    elif request.method == 'POST':
-        # Obtiene el folio seleccionado
-        folio = request.POST.get('folio')
-        if not folio:
-            return JsonResponse({'error': 'Folio no proporcionado'}, status=400)
+    # Validar y parsear fechas
+    if fecha_inicio:
+        try:
+            fecha_inicio = parse_date(fecha_inicio)
+        except ValueError:
+            fecha_inicio = None
+    if fecha_fin:
+        try:
+            fecha_fin = parse_date(fecha_fin)
+        except ValueError:
+            fecha_fin = None
 
-        # Busca la factura correspondiente
-        factura = get_object_or_404(Factura, folio=folio)
-        
-        # Calcula la comisión asociada
-        comision = Comision.objects.filter(factura=factura).first()
-        if not comision:
-            comision = Comision(factura=factura, vendedor=factura.cliente.vendedor)
-            comision.calcular_monto_comision()
-            comision.save()
+    # Crear el filtro de manera condicional usando Q
+    filtros = Q(estatus_pago='Pagada')
+    
+    if cliente_id:
+        filtros &= Q(cliente_id=cliente_id)
+    if fecha_inicio:
+        filtros &= Q(fecha_pago__gte=fecha_inicio)
+    if fecha_fin:
+        filtros &= Q(fecha_pago__lte=fecha_fin)
 
-        # Devuelve los datos al frontend
-        return JsonResponse({
-            'factura': factura.folio,
-            'subtotal': str(factura.subtotal),
-            'estatus_pago': factura.estatus_pago,
-            'comision': str(comision.monto),
-            'porcentaje': str(comision.porcentaje),
-        })
+    # Filtrar las facturas con los filtros generados
+    facturas = Factura.objects.select_related('cliente__vendedor').prefetch_related('compra_set').filter(filtros)
+
+    # Calcular comisiones
+    for factura in facturas:
+        subtotal = Decimal('0.00')
+        for compra in factura.compra_set.all():
+            producto = compra.producto
+            tipo = producto.tipo_producto
+            precio = producto.precio
+            cantidad = compra.cantidad
+
+            # Calcular porcentaje según tipo de producto
+            if tipo == 'N':
+                porcentaje_comision = Decimal('3.00')
+            elif tipo == 'E':
+                porcentaje_comision = Decimal('2.00')
+            elif tipo == 'H':
+                porcentaje_comision = Decimal('1.00')
+            else:
+                porcentaje_comision = Decimal('0.00')
+
+            # Calcular subtotal y comisión
+            subtotal += precio * cantidad
+            compra.comision = (precio * cantidad * porcentaje_comision) / 100
+            compra.save()  # Guardar la comisión calculada en la base de datos
+
+        factura.subtotal = subtotal
+        factura.total_comision = sum(compra.comision for compra in factura.compra_set.all())
+        factura.save()  # Guardar los cambios en la factura
+
+    # Obtener todos los clientes
+    clientes = Cliente.objects.all()
+
+    context = {
+        'clientes': clientes,
+        'facturas': facturas,
+        'fecha_inicio': fecha_inicio.strftime('%Y-%m-%d') if fecha_inicio else '',
+        'fecha_fin': fecha_fin.strftime('%Y-%m-%d') if fecha_fin else '',
+    }
+    return render(request, 'comisiones/calcular_comisiones.html', context)
+
 # Vista para el dashboard
 class DashboardView(TemplateView):
     template_name = 'comisiones/dashboard.html'
