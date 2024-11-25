@@ -32,23 +32,29 @@
         </tr>
     </thead>
     <tbody>
-        {% for factura in facturas %}
-        <tr>
-            <td>{{ factura.folio }}</td>
-            <td>{{ factura.cliente.vendedor.nombre }}</td>
-            <td>${{ factura.subtotal }}</td>
-            <td>
-                
-            </td>
-        </tr>
-        {% endfor %}
+        {% if facturas.exists %}
+            {% for factura in facturas %}
+            <tr>
+                <td>{{ factura.id }}</td>
+                <td>{{ factura.cliente.vendedor.nombre }}</td>
+                <td>${{ factura.subtotal }}</td>
+                <td>
+                    
+                </td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="4">No hay facturas para mostrar. Por favor, aplica un filtro.</td>
+            </tr>
+        {% endif %}
     </tbody>
 </table>
 
 <script>
     function calcular(facturaId) {
         alert('Calculando comisiones para factura ' + facturaId);
-        // Aquí puedes enviar una solicitud Ajax si deseas calcular comisiones de forma dinámica.
+        
     }
 </script>
 {% endblock %}
