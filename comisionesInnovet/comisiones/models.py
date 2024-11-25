@@ -73,11 +73,19 @@ class Compra(models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     cantidad = models.PositiveIntegerField(default=1)
     fecha_compra = models.DateTimeField(default=timezone.now)
+    factura = models.ForeignKey('Factura', on_delete=models.CASCADE, related_name='compras', null=True, blank=True)
+    comision = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def calcular_comision(self):
+        tipo = self.producto.tipo_producto
+        porcentaje_comision = {
+            'N': Decimal('3.00'),
+            'E': Decimal('2.00'),
+            'H': Decimal('1.00'),
+        }.get(tipo, Decimal('0.00'))
+        return (self.producto.precio * self.cantidad * porcentaje_comision) / 100
 
     def save(self, *args, **kwargs):
-        """
-        Al guardar la compra, actualizamos el estado del cliente.
-        """
         super().save(*args, **kwargs)
         self.cliente.compras_realizadas += 1
         self.cliente.actualizar_tipo_cliente()

@@ -135,7 +135,6 @@ def calcular_comisiones(request):
 
     # Crear el filtro de manera condicional usando Q
     filtros = Q(estatus_pago='Pagada')
-    
     if cliente_id:
         filtros &= Q(cliente_id=cliente_id)
     if fecha_inicio:
@@ -144,35 +143,19 @@ def calcular_comisiones(request):
         filtros &= Q(fecha_pago__lte=fecha_fin)
 
     # Filtrar las facturas con los filtros generados
-    facturas = Factura.objects.select_related('cliente__vendedor').prefetch_related('compra_set').filter(filtros)
+    facturas = Factura.objects.select_related('cliente').prefetch_related('compras').filter(filtros)
 
     # Calcular comisiones
     for factura in facturas:
         subtotal = Decimal('0.00')
-        for compra in factura.compra_set.all():
-            producto = compra.producto
-            tipo = producto.tipo_producto
-            precio = producto.precio
-            cantidad = compra.cantidad
-
-            # Calcular porcentaje según tipo de producto
-            if tipo == 'N':
-                porcentaje_comision = Decimal('3.00')
-            elif tipo == 'E':
-                porcentaje_comision = Decimal('2.00')
-            elif tipo == 'H':
-                porcentaje_comision = Decimal('1.00')
-            else:
-                porcentaje_comision = Decimal('0.00')
-
-            # Calcular subtotal y comisión
-            subtotal += precio * cantidad
-            compra.comision = (precio * cantidad * porcentaje_comision) / 100
-            compra.save()  # Guardar la comisión calculada en la base de datos
+        for compra in factura.compras.all():
+            compra.comision = compra.calcular_comision()
+            subtotal += compra.producto.precio * compra.cantidad
+            compra.save()
 
         factura.subtotal = subtotal
-        factura.total_comision = sum(compra.comision for compra in factura.compra_set.all())
-        factura.save()  # Guardar los cambios en la factura
+        factura.total_comision = sum(compra.comision for compra in factura.compras.all())
+        factura.save()
 
     # Obtener todos los clientes
     clientes = Cliente.objects.all()
@@ -184,7 +167,6 @@ def calcular_comisiones(request):
         'fecha_fin': fecha_fin.strftime('%Y-%m-%d') if fecha_fin else '',
     }
     return render(request, 'comisiones/calcular_comisiones.html', context)
-
 # Vista para el dashboard
 class DashboardView(TemplateView):
     template_name = 'comisiones/dashboard.html'
