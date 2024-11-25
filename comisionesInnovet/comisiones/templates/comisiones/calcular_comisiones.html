@@ -34,7 +34,7 @@
     <tbody>
         {% for factura in facturas %}
         <tr>
-            <td>{{ factura.id }}</td>
+            <td>{{ factura.folio }}</td>
             <td>{{ factura.cliente.vendedor.nombre }}</td>
             <td>${{ factura.subtotal }}</td>
             <td>
