@@ -28,4 +28,5 @@ urlpatterns = [
     path('compras/<int:pk>/eliminar/', CompraDeleteView.as_view(), name='compra-delete'),
     path('calcular-comisiones/', views.calcular_comisiones, name='calcular-comisiones'),
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
+    path('factura/<str:folio>/', views.detalle_factura, name='detalle_factura'),
 ]

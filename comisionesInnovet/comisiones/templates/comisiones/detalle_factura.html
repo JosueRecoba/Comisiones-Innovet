@@ -1,0 +1,48 @@
+{% extends "comisiones/base.html" %}
+
+{% block title %}Detalle de Facturas{% endblock %}
+
+{% block content %}
+<h1>Detalle de Facturas</h1>
+
+<table border="1" class="table">
+    <thead>
+        <tr>
+            <th>Folio</th>
+            <th>Cliente</th>
+            <th>Estatus</th>
+            <th>Subtotal</th>
+            <th>Estatus Pago</th>
+            <th>Fecha Pago</th>
+            <th>Tipo Producto</th>
+            <th>Nombre Producto</th>
+            <th>Compras Realizadas</th>
+            <th>Tipo Cliente</th>
+            <th>Comisión (%)</th>
+            <th>Monto Comisión</th>
+            <th>Vendedor</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dato in datos_facturas %}
+        <tr>
+            <td>{{ dato.folio }}</td>
+            <td>{{ dato.cliente }}</td>
+            <td>{{ dato.estatus }}</td>
+            <td>${{ dato.subtotal|floatformat:2 }}</td>
+            <td>{{ dato.estatus_pago }}</td>
+            <td>{{ dato.fecha_pago|date:"d/m/Y" }}</td>
+            <td>{{ dato.tipo_producto }}</td>
+            <td>{{ dato.nombre_producto }}</td>
+            <td>{{ dato.compras_realizadas }}</td>
+            <td>{{ dato.tipo_cliente }}</td>
+            <td>{{ dato.comision }}</td>
+            <td>${{ dato.monto_comision }}</td>
+            <td>{{ dato.vendedor }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{% url 'calcular-comisiones' %}" class="btn btn-secondary">Volver</a>
+{% endblock %}

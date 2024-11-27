@@ -35,11 +35,13 @@
         {% if facturas.exists %}
             {% for factura in facturas %}
             <tr>
-                <td>{{ factura.id }}</td>
+                <td>{{ factura.folio }}</td>
                 <td>{{ factura.cliente.vendedor.nombre }}</td>
                 <td>${{ factura.subtotal }}</td>
                 <td>
-                    
+                    <a href="{% url 'detalle_factura' factura.folio %}" class="btn btn-success" style="text-decoration: none;">
+                        Calcular Comision
+                    </a>
                 </td>
             </tr>
             {% endfor %}

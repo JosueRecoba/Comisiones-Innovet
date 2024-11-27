@@ -171,7 +171,36 @@ def calcular_comisiones(request):
         'fecha_fin': fecha_fin.strftime('%Y-%m-%d') if fecha_fin else '',
     }
     return render(request, 'comisiones/calcular_comisiones.html', context)
-    
+
+
+def detalle_factura(request, folio):
+    # Consulta las facturas y sus relaciones
+    facturas = Factura.objects.select_related('cliente', 'cliente__vendedor').prefetch_related('compras__producto').filter(folio=folio)
+    datos_facturas = []
+
+    for factura in facturas:
+        for compra in factura.compras.all():
+            # Cálculo de la comisión
+            comision_monto = compra.calcular_comision()
+
+            datos_facturas.append({
+                'folio': factura.folio,
+                'cliente': factura.cliente.nombre,
+                'estatus': factura.estatus,
+                'subtotal': factura.subtotal,
+                'estatus_pago': factura.estatus_pago,
+                'fecha_pago': factura.fecha_pago,
+                'tipo_producto': compra.producto.tipo_producto,
+                'nombre_producto': compra.producto.nombre,
+                'compras_realizadas': factura.cliente.compras_realizadas,
+                'tipo_cliente': ClienteProducto.objects.filter(cliente=factura.cliente).first().tipo_cliente,
+                'comision': f'{comision_monto:.2f}',
+                'monto_comision': f'{comision_monto:.2f}',
+                'vendedor': factura.cliente.vendedor.nombre,
+            })
+
+    return render(request, 'comisiones/detalle_factura.html', {'datos_facturas': datos_facturas})
+
 # Vista para el dashboard
 class DashboardView(TemplateView):
     template_name = 'comisiones/dashboard.html'
