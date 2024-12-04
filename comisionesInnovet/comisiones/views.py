@@ -1,81 +1,82 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
-from django.db.models import Q
-from django.db.models import Sum, F, DecimalField, ExpressionWrapper
+from django.db.models import F, Q, Sum, DecimalField
+from django.db.models.functions import Coalesce
 from django.utils.dateparse import parse_date
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.urls import reverse_lazy
-from .models import Cliente, Producto, Vendedor, Compra, Factura, ClienteProducto, Comision
+from .models import Cliente, Producto, Vendedor, Compra, Factura, ClienteProducto
 from decimal import Decimal
-from datetime import datetime
 
 
-# Vista para listar todos los clientes
+# ======= Clientes =======
 class ClienteListView(ListView):
     model = Cliente
     template_name = 'comisiones/cliente_list.html'
     context_object_name = 'clientes'
 
-# Vista para detalles de un cliente
+
 class ClienteDetailView(DetailView):
     model = Cliente
     template_name = 'comisiones/cliente_detail.html'
     context_object_name = 'cliente'
 
-# Vista para crear un nuevo cliente
+
 class ClienteCreateView(CreateView):
     model = Cliente
     template_name = 'comisiones/cliente_form.html'
     fields = ['nombre']
     success_url = reverse_lazy('cliente-list')
 
-# Vista para actualizar un cliente
+
 class ClienteUpdateView(UpdateView):
     model = Cliente
     template_name = 'comisiones/cliente_form.html'
     fields = ['nombre']
     success_url = reverse_lazy('cliente-list')
 
-# Vista para eliminar un cliente
+
 class ClienteDeleteView(DeleteView):
     model = Cliente
     template_name = 'comisiones/cliente_confirm_delete.html'
     success_url = reverse_lazy('cliente-list')
 
-# Vista para listar todos los productos
+
+# ======= Productos =======
 class ProductoListView(ListView):
     model = Producto
     template_name = 'comisiones/producto_list.html'
     context_object_name = 'productos'
 
-# Vista para detalles de un producto
+
 class ProductoDetailView(DetailView):
     model = Producto
     template_name = 'comisiones/producto_detail.html'
     context_object_name = 'producto'
 
-# Vista para crear un nuevo producto
+
 class ProductoCreateView(CreateView):
     model = Producto
     template_name = 'comisiones/producto_form.html'
     fields = ['nombre', 'tipo_producto', 'precio']
     success_url = reverse_lazy('producto-list')
 
-# Vista para actualizar un producto
+
 class ProductoUpdateView(UpdateView):
     model = Producto
     template_name = 'comisiones/producto_form.html'
     fields = ['nombre', 'tipo_producto', 'precio']
     success_url = reverse_lazy('producto-list')
 
-# Vista para eliminar un producto
+
 class ProductoDeleteView(DeleteView):
     model = Producto
     template_name = 'comisiones/producto_confirm_delete.html'
     success_url = reverse_lazy('producto-list')
 
-# Vista para listar todas las compras
+
+# ======= Compras =======
 class CompraListView(ListView):
     model = Compra
     template_name = 'comisiones/compra_list.html'
@@ -83,105 +84,102 @@ class CompraListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Agregar lógica para calcular las comisiones
         for compra in context['compras']:
             compra.comision_calculada = compra.calcular_comision()
         return context
 
-# Vista para detalles de una compra
+
 class CompraDetailView(DetailView):
     model = Compra
     template_name = 'comisiones/compra_detail.html'
     context_object_name = 'compra'
 
-# Vista para crear una nueva compra
+
 class CompraCreateView(CreateView):
     model = Compra
     template_name = 'comisiones/compra_form.html'
     fields = ['cliente', 'vendedor', 'producto', 'cantidad']
     success_url = reverse_lazy('compra-list')
 
-# Vista para actualizar una compra
+
 class CompraUpdateView(UpdateView):
     model = Compra
     template_name = 'comisiones/compra_form.html'
     fields = ['cliente', 'vendedor', 'producto', 'cantidad']
     success_url = reverse_lazy('compra-list')
 
-# Vista para eliminar una compra
+
 class CompraDeleteView(DeleteView):
     model = Compra
     template_name = 'comisiones/compra_confirm_delete.html'
     success_url = reverse_lazy('compra-list')
 
-# vista para calcular comisiones
+
+# ======= Comisiones =======
 def calcular_comisiones(request):
-    # Obtener filtros del usuario
     cliente_id = request.GET.get('cliente')
     fecha_inicio = request.GET.get('fecha_inicio')
     fecha_fin = request.GET.get('fecha_fin')
 
     # Validar y parsear fechas
-    if fecha_inicio:
+    if fecha_inicio and isinstance(fecha_inicio, str):
         try:
             fecha_inicio = parse_date(fecha_inicio)
         except ValueError:
             fecha_inicio = None
-    if fecha_fin:
+    else:
+        fecha_inicio = None
+
+    if fecha_fin and isinstance(fecha_fin, str):
         try:
             fecha_fin = parse_date(fecha_fin)
         except ValueError:
             fecha_fin = None
+    else:
+        fecha_fin = None
 
-    # Inicializar el queryset de facturas como vacío
-    facturas = Factura.objects.none()
+    # Construir filtros dinámicos
+    filtros = Q(estatus_pago='Pagada')
+    if cliente_id:
+        filtros &= Q(cliente_id=cliente_id)
+    if fecha_inicio:
+        filtros &= Q(fecha_pago__gte=fecha_inicio)
+    if fecha_fin:
+        filtros &= Q(fecha_pago__lte=fecha_fin)
 
-    # Si hay filtros, aplicar el filtrado
-    if cliente_id or fecha_inicio or fecha_fin:
-        filtros = Q(estatus_pago='Pagada')
-        if cliente_id:
-            filtros &= Q(cliente_id=cliente_id)
-        if fecha_inicio:
-            filtros &= Q(fecha_pago__gte=fecha_inicio)
-        if fecha_fin:
-            filtros &= Q(fecha_pago__lte=fecha_fin)
+    # Consultar facturas con sus relaciones
+    facturas = Factura.objects.select_related('cliente').prefetch_related('compras').filter(filtros)
 
-        # Filtrar las facturas con los filtros generados
-        facturas = Factura.objects.select_related('cliente').prefetch_related('compras').filter(filtros)
+    # Calcular comisiones y subtotales para cada factura
+    for factura in facturas:
+        subtotal = factura.compras.aggregate(
+            total=Coalesce(Sum(F('producto__precio') * F('cantidad'), output_field=DecimalField()), Decimal('3.00'))
+        )['total']
+        factura.subtotal = subtotal
+        factura.total_comision = sum(compra.calcular_comision() for compra in factura.compras.all())
+        factura.save()
 
-        # Calcular comisiones
-        for factura in facturas:
-            subtotal = Decimal('0.00')
-            for compra in factura.compras.all():
-                compra.comision = compra.calcular_comision()
-                subtotal += compra.producto.precio * compra.cantidad
-                compra.save()
-
-            factura.subtotal = subtotal
-            factura.total_comision = sum(compra.comision for compra in factura.compras.all())
-            factura.save()
-
-    # Obtener todos los clientes
-    clientes = Cliente.objects.all()
-
+    # Pasar contexto a la plantilla
     context = {
-        'clientes': clientes,
+        'clientes': Cliente.objects.all(),
         'facturas': facturas,
-        'fecha_inicio': fecha_inicio.strftime('%Y-%m-%d') if fecha_inicio else '',
-        'fecha_fin': fecha_fin.strftime('%Y-%m-%d') if fecha_fin else '',
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
     }
     return render(request, 'comisiones/calcular_comisiones.html', context)
 
 
 def detalle_factura(request, folio):
-    # Consulta las facturas y sus relaciones
     facturas = Factura.objects.select_related('cliente', 'cliente__vendedor').prefetch_related('compras__producto').filter(folio=folio)
     datos_facturas = []
 
     for factura in facturas:
         for compra in factura.compras.all():
-            # Cálculo de la comisión
-            comision_monto = compra.calcular_comision()
+            # Cálculo del porcentaje de comisión
+            comision_monto = float(compra.comision) * 100
+            
+            # Cálculo del monto de la comisión en dinero
+            monto_comision = compra.comision * compra.producto.precio * compra.cantidad  # Ejemplo
 
             datos_facturas.append({
                 'folio': factura.folio,
@@ -194,13 +192,13 @@ def detalle_factura(request, folio):
                 'nombre_producto': compra.producto.nombre,
                 'compras_realizadas': factura.cliente.compras_realizadas,
                 'tipo_cliente': ClienteProducto.objects.filter(cliente=factura.cliente).first().tipo_cliente,
-                'comision': f'{comision_monto:.2f}',
-                'monto_comision': f'{comision_monto:.2f}',
+                'comision': comision_monto,  
+                'monto_comision': monto_comision, 
                 'vendedor': factura.cliente.vendedor.nombre,
             })
 
     return render(request, 'comisiones/detalle_factura.html', {'datos_facturas': datos_facturas})
 
-# Vista para el dashboard
+
 class DashboardView(TemplateView):
     template_name = 'comisiones/dashboard.html'

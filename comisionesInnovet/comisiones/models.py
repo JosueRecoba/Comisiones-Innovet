@@ -74,7 +74,7 @@ class Compra(models.Model):
     cantidad = models.PositiveIntegerField(default=1)
     fecha_compra = models.DateTimeField(default=timezone.now)
     factura = models.ForeignKey('Factura', on_delete=models.CASCADE, related_name='compras', null=True, blank=True)
-    comision = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    comision = models.DecimalField(max_digits=10, decimal_places=2, default=0.03)
 
     def calcular_comision(self):
         tipo = self.producto.tipo_producto
@@ -115,8 +115,9 @@ class Factura(models.Model):
         """
         Calcula el total de comisiones para los productos de esta factura.
         """
-        comisiones = Comision.objects.filter(factura=self)
-        total_comision = sum(comision.monto for comision in comisiones)
+        total_comision = sum(
+            compra.comision * compra.cantidad for compra in self.compras.all()
+        )
         return total_comision
 
     def __str__(self):
@@ -131,40 +132,3 @@ class Venta(models.Model):
 
     def __str__(self):
         return f'Venta de {self.producto.nombre} - Factura {self.factura.folio}'
-
-
-class Comision(models.Model):
-    factura = models.ForeignKey(Factura, on_delete=models.CASCADE)
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    porcentaje = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'))
-    monto = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
-    vendedor = models.ForeignKey(Vendedor, on_delete=models.CASCADE)
-
-    def calcular_monto_comision(self):
-        """
-        Calcula el monto de la comisión basado en el precio del producto y el tipo de cliente.
-        """
-        cliente_producto = ClienteProducto.objects.filter(cliente=self.factura.cliente, producto=self.producto).first()
-        if cliente_producto:
-            if cliente_producto.tipo_cliente == 'N':
-                self.porcentaje = Decimal('3.00')  
-            elif cliente_producto.tipo_cliente == 'E':
-                self.porcentaje = Decimal('2.00')  
-            elif cliente_producto.tipo_cliente == 'H':
-                self.porcentaje = Decimal('1.00')  
-        else:
-            self.porcentaje = Decimal('0.00')
-
-        self.monto = (self.porcentaje / Decimal('100')) * self.producto.precio * Decimal(self.factura.subtotal)
-        return self.monto
-
-    def save(self, *args, **kwargs):
-        """
-        Calcula y guarda el monto de comisión antes de guardar la instancia.
-        """
-        self.calcular_monto_comision()
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-         producto_nombre = self.producto.nombre if self.producto else "Sin producto"
-         return f'Comisión para Factura {self.factura.folio} - Producto {producto_nombre}'

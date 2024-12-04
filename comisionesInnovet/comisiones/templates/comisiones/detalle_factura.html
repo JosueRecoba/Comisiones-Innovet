@@ -15,7 +15,7 @@
             <th>Estatus Pago</th>
             <th>Fecha Pago</th>
             <th>Tipo Producto</th>
-            <th>Nombre Producto</th>
+            <th>Producto</th>
             <th>Compras Realizadas</th>
             <th>Tipo Cliente</th>
             <th>Comisión (%)</th>
@@ -36,8 +36,8 @@
             <td>{{ dato.nombre_producto }}</td>
             <td>{{ dato.compras_realizadas }}</td>
             <td>{{ dato.tipo_cliente }}</td>
-            <td>{{ dato.comision }}</td>
-            <td>${{ dato.monto_comision }}</td>
+            <td>%{{ dato.comision|floatformat:2 }}</td>
+            <td>${{ dato.monto_comision|floatformat:2 }}</td>
             <td>{{ dato.vendedor }}</td>
         </tr>
         {% endfor %}
