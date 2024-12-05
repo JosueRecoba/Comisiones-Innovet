@@ -70,13 +70,20 @@ header {
     color: #fff;
     text-decoration: none;
     padding: 10px 20px;
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     transition: background-color 0.3s;
     font-weight: bold;
 }
 
 .sidebar a:hover {
     background-color: #9e1317; 
+}
+
+.material-icons {
+    font-size: 20px;
+    color: #fdfcfc;
 }
 
 /* Contenido Principal */

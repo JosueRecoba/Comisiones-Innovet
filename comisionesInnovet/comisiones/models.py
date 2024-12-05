@@ -77,16 +77,27 @@ class Compra(models.Model):
     comision = models.DecimalField(max_digits=10, decimal_places=2, default=0.03)
 
     def calcular_comision(self):
-        tipo = self.producto.tipo_producto
+        # Busca el tipo de cliente en ClienteProducto
+        cliente_producto = ClienteProducto.objects.filter(cliente=self.cliente, producto=self.producto).first()
+        if not cliente_producto:
+            return Decimal('0.03')  
+
+        # Define el porcentaje basado en el tipo de cliente
         porcentaje_comision = {
-            'N': Decimal('3.00'),
-            'E': Decimal('2.00'),
-            'H': Decimal('1.00'),
-        }.get(tipo, Decimal('0.00'))
+            'N': Decimal('3.00'),  
+            'E': Decimal('2.00'),  
+            'H': Decimal('1.00'),  
+        }.get(cliente_producto.tipo_cliente, Decimal('0.00'))
+
+        # Calcula la comisión
         return (self.producto.precio * self.cantidad * porcentaje_comision) / 100
 
     def save(self, *args, **kwargs):
+        # Calcula la comisión antes de guardar
+        self.comision = self.calcular_comision()
         super().save(*args, **kwargs)
+
+        # Actualiza las compras realizadas y el tipo de cliente
         self.cliente.compras_realizadas += 1
         self.cliente.actualizar_tipo_cliente()
 

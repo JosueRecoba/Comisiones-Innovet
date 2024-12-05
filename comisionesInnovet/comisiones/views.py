@@ -121,7 +121,7 @@ def calcular_comisiones(request):
     fecha_inicio = request.GET.get('fecha_inicio')
     fecha_fin = request.GET.get('fecha_fin')
 
-    # Validar y parsear fechas
+    # Filtro de fechas
     if fecha_inicio and isinstance(fecha_inicio, str):
         try:
             fecha_inicio = parse_date(fecha_inicio)
@@ -138,7 +138,7 @@ def calcular_comisiones(request):
     else:
         fecha_fin = None
 
-    # Construir filtros dinámicos
+    # Filtra solo facturas con estatus PAGADA
     filtros = Q(estatus_pago='Pagada')
     if cliente_id:
         filtros &= Q(cliente_id=cliente_id)

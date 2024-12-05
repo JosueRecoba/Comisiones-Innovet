@@ -7,6 +7,7 @@
     <title>{% block title %}Comisiones{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="icon" href="{% static 'Logo-INN.png' %}" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
      <!-- Encabezado -->
@@ -17,15 +18,33 @@
     <div class="sidebar">
         <img src="{% static 'logo-Inn-Blanco.png' %}" alt="Logo Innovet">
         <ul>
-            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li><a href="">Vendedor</a></li>
-            <li><a href="{% url 'cliente-list' %}">Lista de Clientes</a></li>
-            <li><a href="">Productos</a></li>
-            <li><a href="">Cliente Producto</a></li>
-            <li><a href="">Factura</a></li>
-            <li><a href="">Compras</a></li>
-            <li><a href="">Ventas</a></li>
-            <li><a href="{% url 'calcular-comisiones' %}">Calcular Comision</a></li>
+            <li><a href="{% url 'dashboard' %}">
+                <span class="material-icons">dashboard</span> Dashboard
+            </a></li>
+            <li><a href="">
+                <span class="material-icons">person</span> Vendedor
+            </a></li>
+            <li><a href="{% url 'cliente-list' %}">
+                <span class="material-icons">group</span> Lista de Clientes
+            </a></li>
+            <li><a href="">
+                <span class="material-icons">inventory</span> Productos
+            </a></li>
+            <li><a href="">
+                <span class="material-icons">category</span> Cliente Producto
+            </a></li>
+            <li><a href="">
+                <span class="material-icons">receipt</span> Factura
+            </a></li>
+            <li><a href="">
+                <span class="material-icons">shopping_cart</span> Compras
+            </a></li>
+            <li><a href="">
+                <span class="material-icons">trending_up</span> Ventas
+            </a></li>
+            <li><a href="{% url 'calcular-comisiones' %}">
+                <span class="material-icons">attach_money</span> Calcular Comision
+            </a></li>
         </ul>
     </div>
 
