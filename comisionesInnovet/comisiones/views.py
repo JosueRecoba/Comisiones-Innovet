@@ -6,7 +6,7 @@ from django.db.models.functions import Coalesce
 from django.utils.dateparse import parse_date
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.urls import reverse_lazy
-from .models import Cliente, Producto, Vendedor, Compra, Factura, ClienteProducto
+from .models import Cliente, Producto, Vendedor, Factura, ClienteProducto
 from decimal import Decimal
 
 
@@ -43,76 +43,23 @@ class ClienteDeleteView(DeleteView):
     success_url = reverse_lazy('cliente-list')
 
 
-# ======= Productos =======
-class ProductoListView(ListView):
-    model = Producto
-    template_name = 'comisiones/producto_list.html'
-    context_object_name = 'productos'
+class ClienteProductoView(TemplateView):
+    template_name = "comisiones/cliente_producto.html"
 
+class ComprasView(TemplateView):
+    template_name = "comisiones/compras.html"
 
-class ProductoDetailView(DetailView):
-    model = Producto
-    template_name = 'comisiones/producto_detail.html'
-    context_object_name = 'producto'
+class FacturasView(TemplateView):
+    template_name = "comisiones/facturas.html"
 
+class ProductosView(TemplateView):
+    template_name = "comisiones/productos.html"
 
-class ProductoCreateView(CreateView):
-    model = Producto
-    template_name = 'comisiones/producto_form.html'
-    fields = ['nombre', 'tipo_producto', 'precio']
-    success_url = reverse_lazy('producto-list')
+class VendedorView(TemplateView):
+    template_name = "comisiones/vendedor.html"
 
-
-class ProductoUpdateView(UpdateView):
-    model = Producto
-    template_name = 'comisiones/producto_form.html'
-    fields = ['nombre', 'tipo_producto', 'precio']
-    success_url = reverse_lazy('producto-list')
-
-
-class ProductoDeleteView(DeleteView):
-    model = Producto
-    template_name = 'comisiones/producto_confirm_delete.html'
-    success_url = reverse_lazy('producto-list')
-
-
-# ======= Compras =======
-class CompraListView(ListView):
-    model = Compra
-    template_name = 'comisiones/compra_list.html'
-    context_object_name = 'compras'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        for compra in context['compras']:
-            compra.comision_calculada = compra.calcular_comision()
-        return context
-
-
-class CompraDetailView(DetailView):
-    model = Compra
-    template_name = 'comisiones/compra_detail.html'
-    context_object_name = 'compra'
-
-
-class CompraCreateView(CreateView):
-    model = Compra
-    template_name = 'comisiones/compra_form.html'
-    fields = ['cliente', 'vendedor', 'producto', 'cantidad']
-    success_url = reverse_lazy('compra-list')
-
-
-class CompraUpdateView(UpdateView):
-    model = Compra
-    template_name = 'comisiones/compra_form.html'
-    fields = ['cliente', 'vendedor', 'producto', 'cantidad']
-    success_url = reverse_lazy('compra-list')
-
-
-class CompraDeleteView(DeleteView):
-    model = Compra
-    template_name = 'comisiones/compra_confirm_delete.html'
-    success_url = reverse_lazy('compra-list')
+class VentasView(TemplateView):
+    template_name = "comisiones/ventas.html"
 
 
 # ======= Comisiones =======
