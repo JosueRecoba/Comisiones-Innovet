@@ -1,7 +1,34 @@
-<!-- templates/registration/login.html -->
-<h2>Login</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Login</button>
-</form>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'Logo-INN.png' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <title>Login Comisiones Innovet</title>
+</head>
+<body>
+    <div class="login-container">
+        <div class="container">
+            <div class="left-section">
+                <img src="{% static 'inn.png' %}" alt="Logo Innovet">
+            </div>
+            <div class="right-section">
+                <h2>Bienvenido</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <input type="text" name="username" placeholder="Usuario" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="password" placeholder="Contraseña" required>
+                    </div>
+                    <button type="submit" class="login-button">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

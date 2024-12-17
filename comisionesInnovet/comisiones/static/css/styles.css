@@ -153,3 +153,71 @@ header {
     color: #333;
     margin-top: 20px;
 }
+
+/* Estilos para login */
+.login-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #bf171c;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.login-container .container {
+    width: 80%;
+    height: 70%;
+    display: flex;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.login-container .left-section {
+    flex: 1;
+    background-size: cover;
+}
+
+.login-container .right-section {
+    flex: 1;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.login-container .right-section h2 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.login-container .form-group {
+    width: 100%;
+    max-width: 300px;
+    margin-bottom: 15px;
+}
+
+.login-container .form-group input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.login-container .login-button {
+    background-color: #6bbe45;
+    color: white;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.login-container .login-button:hover {
+    background-color: #5ca63d;
+}

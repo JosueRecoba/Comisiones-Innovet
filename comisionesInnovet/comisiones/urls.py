@@ -9,6 +9,13 @@ from .views import (
 )
 
 urlpatterns = [
+    
+    # --------------------- URLs de Dashboard ---------------------
+    path('dashboard/', DashboardView.as_view(), name='dashboard'),
+
+    # --------------------- URLs de Vendedor ---------------------
+    path('vendedor/', VendedorView.as_view(), name='vendedor'),
+
     # --------------------- URLs de Clientes ---------------------
     path('clientes/', ClienteListView.as_view(), name='cliente-list'),
     path('clientes/<int:pk>/', ClienteDetailView.as_view(), name='cliente-detail'),
@@ -16,13 +23,13 @@ urlpatterns = [
     path('clientes/<int:pk>/editar/', ClienteUpdateView.as_view(), name='cliente-update'),
     path('clientes/<int:pk>/eliminar/', ClienteDeleteView.as_view(), name='cliente-delete'),
     
-    # --------------------- URLs de Detall Factura ---------------------
     
-    path('factura/<str:folio>/', views.detalle_factura, name='detalle_factura'),
+    # --------------------- URLs de Productos ---------------------
+    path('productos/', ProductosView.as_view(), name='productos'),
 
-    # --------------------- URLs de Dashboard ---------------------
-    path('dashboard/', DashboardView.as_view(), name='dashboard'),
-    
+     # --------------------- URLs de Cliente Productos ---------------------
+    path('cliente-producto/', views.ClienteProductoView.as_view(), name='cliente-producto'),
+
     # --------------------- URLs de Facturas ---------------------
     path('facturas/', FacturasView.as_view(), name='facturas'),
 
@@ -31,17 +38,11 @@ urlpatterns = [
 
     # --------------------- URLs de Ventas ---------------------
     path('ventas/', VentasView.as_view(), name='ventas'),
-
-    # --------------------- URLs de Vendedor ---------------------
-    path('vendedor/', VendedorView.as_view(), name='vendedor'),
+    
+     # --------------------- URLs de Detalle Factura ---------------------
+    path('factura/<str:folio>/', views.detalle_factura, name='detalle_factura'),
 
     # --------------------- URLs de Comisiones ---------------------
     path('calcular-comisiones/', views.calcular_comisiones, name='calcular-comisiones'),
-
-    # --------------------- URLs de Productos ---------------------
-    path('productos/', ProductosView.as_view(), name='productos'),
-
-    # --------------------- URLs de Cliente Productos ---------------------
-    path('cliente-producto/', views.ClienteProductoView.as_view(), name='cliente-producto'),
 
 ]

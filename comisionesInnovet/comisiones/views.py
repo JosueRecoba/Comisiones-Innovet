@@ -8,6 +8,8 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.urls import reverse_lazy
 from .models import Cliente, Producto, Vendedor, Factura, ClienteProducto
 from decimal import Decimal
+from django.shortcuts import redirect
+
 
 
 # ======= Clientes =======
@@ -15,7 +17,6 @@ class ClienteListView(ListView):
     model = Cliente
     template_name = 'comisiones/cliente_list.html'
     context_object_name = 'clientes'
-
 
 class ClienteDetailView(DetailView):
     model = Cliente
@@ -26,8 +27,14 @@ class ClienteDetailView(DetailView):
 class ClienteCreateView(CreateView):
     model = Cliente
     template_name = 'comisiones/cliente_form.html'
-    fields = ['nombre']
+    fields = ['nombre', 'compras_realizadas', 'fecha_registro', 'vendedor']
     success_url = reverse_lazy('cliente-list')
+
+    def form_valid(self, form):
+        cliente = form.save(commit=False)
+        cliente.save()
+        return redirect('cliente-list')
+    
 
 
 class ClienteUpdateView(UpdateView):
@@ -42,7 +49,7 @@ class ClienteDeleteView(DeleteView):
     template_name = 'comisiones/cliente_confirm_delete.html'
     success_url = reverse_lazy('cliente-list')
 
-
+# ======= Clientes Producto =======
 class ClienteProductoView(TemplateView):
     template_name = "comisiones/cliente_producto.html"
 

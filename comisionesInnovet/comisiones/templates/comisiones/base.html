@@ -4,10 +4,11 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Comisiones{% endblock %}</title>
+    <title>{% block title %}Dashboard{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="icon" href="{% static 'Logo-INN.png' %}" type="image/x-icon">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
      <!-- Encabezado -->
@@ -53,5 +54,37 @@
         {% block content %}
         {% endblock %}
     </div>
+
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!--Biblioteca DE jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Función para abrir el modal de edición con datos
+            document.querySelectorAll('[data-bs-target="#modalUpdate"]').forEach(button => {
+                button.addEventListener('click', event => {
+                    const id = event.target.getAttribute('data-id');
+                    fetch(`/clientes/${id}/update/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            document.getElementById('updateId').value = data.id;
+                            document.getElementById('updateNombre').value = data.nombre;
+                        });
+                });
+            });
+    
+            // Configuración para eliminación
+            document.querySelectorAll('[data-bs-target="#modalDelete"]').forEach(button => {
+                button.addEventListener('click', event => {
+                    const id = event.target.getAttribute('data-id');
+                    document.getElementById('deleteId').value = id;
+                });
+            });
+        });
+    </script>
+    
 </body>
 </html>
