@@ -10,6 +10,7 @@ from .models import Cliente, Producto, Vendedor, Factura, ClienteProducto
 from decimal import Decimal
 from django.shortcuts import redirect
 from django.http import HttpResponseNotAllowed
+from django.contrib import messages
 
 
 
@@ -66,11 +67,17 @@ class ProductosView(TemplateView):
 class VendedorView(TemplateView):
     template_name = "comisiones/vendedor.html"
 
+    # Funsion para Crear usuarios
     def post(self, request, *args, **kwargs):
         if 'agregar_vendedor' in request.POST:
             nombre = request.POST.get('nombre')
             if nombre:
-                Vendedor.objects.create(nombre=nombre)
+                # Validar si ya existe un vendedor con ese nombre
+                if Vendedor.objects.filter(nombre__iexact=nombre).exists():
+                    messages.error(request, f"El vendedor '{nombre}' ya existe.")  # Mensaje de error
+                else:
+                    Vendedor.objects.create(nombre=nombre)
+                    messages.success(request, f"Vendedor '{nombre}' agregado con éxito.")  # Mensaje de éxito
             return redirect('vendedor')
         return HttpResponseNotAllowed(['POST'])
 
