@@ -39,6 +39,7 @@ urlpatterns = [
     # --------------------- URLs de Ventas ---------------------
     path('ventas/', VentasView.as_view(), name='ventas'),
     
+    
      # --------------------- URLs de Detalle Factura ---------------------
     path('factura/<str:folio>/', views.detalle_factura, name='detalle_factura'),
 

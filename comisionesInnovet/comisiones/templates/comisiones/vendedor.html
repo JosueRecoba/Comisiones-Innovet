@@ -1,4 +1,132 @@
 <!-- templates/comisiones/vendedor.html -->
 {% extends 'comisiones/base.html' %}
 
-{% block title %}Vendedor{% endblock %}
+{% block title %}Vendedores{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1>Lista de Vendedores</h1>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreate">Agregar Nuevo Vendedor</button>
+    <ul class="list-group mt-3">
+        {% for vendedor in vendedores %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ vendedor.nombre }}
+                <div>
+                    <button 
+                        class="btn btn-warning btn-sm" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#modalUpdate" 
+                        data-id="{{ vendedor.id }}" 
+                        data-nombre="{{ vendedor.nombre }}">Editar</button>
+
+                    <button 
+                        class="btn btn-danger btn-sm" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#modalDelete" 
+                        data-id="{{ vendedor.id }}">Eliminar</button>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- Modal Agregar Vendedor -->
+<div class="modal fade" id="modalCreate" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalCreateLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'vendedor' %}">
+                {% csrf_token %}
+                <!-- Campo oculto para identificar la acción -->
+                <input type="hidden" name="agregar_vendedor" value="1">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCreateLabel">Agregar Nuevo Vendedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Campo Nombre -->
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre del Vendedor</label>
+                        <input type="text" name="nombre" id="nombre" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Vendedor -->
+<div class="modal fade" id="modalUpdate" tabindex="-1" aria-labelledby="modalUpdateLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalUpdateLabel">Editar Vendedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="updateId">
+                    <div class="mb-3">
+                        <label for="updateNombre" class="form-label">Nombre del Vendedor</label>
+                        <input type="text" name="nombre" id="updateNombre" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Eliminar Vendedor -->
+<div class="modal fade" id="modalDelete" tabindex="-1" aria-labelledby="modalDeleteLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalDeleteLabel">Eliminar Vendedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro de que deseas eliminar este vendedor?</p>
+                    <input type="hidden" name="id" id="deleteId">
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    // Configuración del modal de edición
+    const updateModal = document.getElementById('modalUpdate');
+    updateModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget;
+        const id = button.getAttribute('data-id');
+        const nombre = button.getAttribute('data-nombre');
+        document.getElementById('updateId').value = id;
+        document.getElementById('updateNombre').value = nombre;
+        updateModal.querySelector('form').action = `/vendedores/${id}/editar/`; 
+    });
+
+        // Configuración del modal de eliminación
+        const deleteModal = document.getElementById('modalDelete');
+        deleteModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-id');
+            document.getElementById('deleteId').value = id;
+            deleteModal.querySelector('form').action = `/vendedores/${id}/eliminar/`;
+        });
+    });
+</script>

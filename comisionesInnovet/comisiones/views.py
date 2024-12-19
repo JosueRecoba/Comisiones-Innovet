@@ -9,6 +9,7 @@ from django.urls import reverse_lazy
 from .models import Cliente, Producto, Vendedor, Factura, ClienteProducto
 from decimal import Decimal
 from django.shortcuts import redirect
+from django.http import HttpResponseNotAllowed
 
 
 
@@ -65,9 +66,17 @@ class ProductosView(TemplateView):
 class VendedorView(TemplateView):
     template_name = "comisiones/vendedor.html"
 
+    def post(self, request, *args, **kwargs):
+        if 'agregar_vendedor' in request.POST:
+            nombre = request.POST.get('nombre')
+            if nombre:
+                Vendedor.objects.create(nombre=nombre)
+            return redirect('vendedor')
+        return HttpResponseNotAllowed(['POST'])
+
+
 class VentasView(TemplateView):
     template_name = "comisiones/ventas.html"
-
 
 # ======= Comisiones =======
 def calcular_comisiones(request):
