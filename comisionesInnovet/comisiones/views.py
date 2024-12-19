@@ -66,7 +66,12 @@ class ProductosView(TemplateView):
 
 class VendedorView(TemplateView):
     template_name = "comisiones/vendedor.html"
-
+    # Lista de vendedores ordenada
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['vendedores'] = Vendedor.objects.all().order_by('nombre')  
+        return context
+    
     # Funsion para Crear usuarios
     def post(self, request, *args, **kwargs):
         if 'agregar_vendedor' in request.POST:
@@ -74,10 +79,10 @@ class VendedorView(TemplateView):
             if nombre:
                 # Validar si ya existe un vendedor con ese nombre
                 if Vendedor.objects.filter(nombre__iexact=nombre).exists():
-                    messages.error(request, f"El vendedor '{nombre}' ya existe.")  # Mensaje de error
+                    messages.error(request, f"El vendedor '{nombre}' ya existe.")  
                 else:
                     Vendedor.objects.create(nombre=nombre)
-                    messages.success(request, f"Vendedor '{nombre}' agregado con éxito.")  # Mensaje de éxito
+                    messages.success(request, f"Vendedor '{nombre}' agregado con éxito.") 
             return redirect('vendedor')
         return HttpResponseNotAllowed(['POST'])
 
