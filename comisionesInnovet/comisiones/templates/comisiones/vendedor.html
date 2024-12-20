@@ -69,76 +69,78 @@
     </div>
 </div>
 
-<!-- Modal Editar Vendedor -->
+<!-- Modal para Editar -->
 <div class="modal fade" id="modalUpdate" tabindex="-1" aria-labelledby="modalUpdateLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <form method="post" action="">
-                {% csrf_token %}
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalUpdateLabel">Editar Vendedor</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="id" id="updateId">
-                    <div class="mb-3">
-                        <label for="updateNombre" class="form-label">Nombre del Vendedor</label>
-                        <input type="text" name="nombre" id="updateNombre" class="form-control" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Guardar</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                </div>
-            </form>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalUpdateLabel">Editar Vendedor</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
+        <div class="modal-body">
+          <form method="post" action="{% url 'vendedor' %}">
+            {% csrf_token %}
+            <input type="hidden" name="editar_vendedor" value="1">
+            <input type="hidden" id="updateId" name="id">
+            <div class="mb-3">
+              <label for="updateNombre" class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="updateNombre" name="nombre">
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+          </form>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 
 <!-- Modal Eliminar Vendedor -->
 <div class="modal fade" id="modalDelete" tabindex="-1" aria-labelledby="modalDeleteLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <form method="post" action="">
-                {% csrf_token %}
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalDeleteLabel">Eliminar Vendedor</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>¿Estás seguro de que deseas eliminar este vendedor?</p>
-                    <input type="hidden" name="id" id="deleteId">
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-danger">Eliminar</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                </div>
-            </form>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalDeleteLabel">Eliminar Vendedor</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
+        <div class="modal-body">
+          <p>¿Estás seguro de que deseas eliminar este vendedor?</p>
+          <form method="post" action="{% url 'vendedor' %}">
+            {% csrf_token %}
+            <input type="hidden" name="eliminar_vendedor" value="1">
+            <input type="hidden" id="deleteId" name="id">
+            <button type="submit" class="btn btn-danger">Eliminar</button>
+          </form>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-    // Configuración del modal de edición
-    const updateModal = document.getElementById('modalUpdate');
-    updateModal.addEventListener('show.bs.modal', event => {
-        const button = event.relatedTarget;
-        const id = button.getAttribute('data-id');
-        const nombre = button.getAttribute('data-nombre');
-        document.getElementById('updateId').value = id;
-        document.getElementById('updateNombre').value = nombre;
-        updateModal.querySelector('form').action = `/vendedores/${id}/editar/`; 
+    document.addEventListener('DOMContentLoaded', function() {
+      var modalUpdate = document.getElementById('modalUpdate');
+      var modalDelete = document.getElementById('modalDelete');
+    
+      modalUpdate.addEventListener('show.bs.modal', function(event) {
+        var button = event.relatedTarget;
+        var id = button.getAttribute('data-id');
+        var nombre = button.getAttribute('data-nombre');
+    
+        var modalTitle = modalUpdate.querySelector('.modal-title');
+        var inputId = modalUpdate.querySelector('#updateId');
+        var inputNombre = modalUpdate.querySelector('#updateNombre');
+    
+        modalTitle.textContent = 'Editar Vendedor: ' + nombre;
+        inputId.value = id;
+        inputNombre.value = nombre;
+      });
+    
+      modalDelete.addEventListener('show.bs.modal', function(event) {
+        var button = event.relatedTarget;
+        var id = button.getAttribute('data-id');
+    
+        var inputId = modalDelete.querySelector('#deleteId');
+        inputId.value = id;
+      });
     });
-
-        // Configuración del modal de eliminación
-        const deleteModal = document.getElementById('modalDelete');
-        deleteModal.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget;
-            const id = button.getAttribute('data-id');
-            document.getElementById('deleteId').value = id;
-            deleteModal.querySelector('form').action = `/vendedores/${id}/eliminar/`;
-        });
-    });
-</script>
+    </script>

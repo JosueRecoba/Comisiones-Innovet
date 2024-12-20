@@ -72,20 +72,45 @@ class VendedorView(TemplateView):
         context['vendedores'] = Vendedor.objects.all().order_by('nombre')  
         return context
     
-    # Funsion para Crear usuarios
     def post(self, request, *args, **kwargs):
         if 'agregar_vendedor' in request.POST:
             nombre = request.POST.get('nombre')
             if nombre:
-                # Validar si ya existe un vendedor con ese nombre
                 if Vendedor.objects.filter(nombre__iexact=nombre).exists():
                     messages.error(request, f"El vendedor '{nombre}' ya existe.")  
                 else:
                     Vendedor.objects.create(nombre=nombre)
                     messages.success(request, f"Vendedor '{nombre}' agregado con éxito.") 
             return redirect('vendedor')
+        
+        elif 'editar_vendedor' in request.POST:
+            vendedor_id = request.POST.get('id')
+            nombre = request.POST.get('nombre')
+            if vendedor_id and nombre:
+                try:
+                    vendedor = Vendedor.objects.get(id=vendedor_id)
+                    vendedor.nombre = nombre
+                    vendedor.save()
+                    messages.success(request, f"Vendedor '{nombre}' actualizado con éxito.")
+                except Vendedor.DoesNotExist:
+                    messages.error(request, "El vendedor no existe.")
+            return redirect('vendedor')
+        
+        elif 'eliminar_vendedor' in request.POST:
+            vendedor_id = request.POST.get('id')
+            if vendedor_id:
+                try:
+                    vendedor = Vendedor.objects.get(id=vendedor_id)
+                    vendedor.delete()
+                    messages.success(request, "Vendedor eliminado con éxito.")
+                except Vendedor.DoesNotExist:
+                    messages.error(request, "El vendedor no existe.")
+            return redirect('vendedor')
+        
         return HttpResponseNotAllowed(['POST'])
 
+class VentasView(TemplateView):
+    template_name = "comisiones/ventas.html"
 
 class VentasView(TemplateView):
     template_name = "comisiones/ventas.html"
