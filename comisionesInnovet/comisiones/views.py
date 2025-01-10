@@ -4,15 +4,14 @@ from django.shortcuts import render, get_object_or_404
 from django.db.models import F, Q, Sum, DecimalField
 from django.db.models.functions import Coalesce
 from django.utils.dateparse import parse_date
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView, View
 from django.urls import reverse_lazy
 from .models import Cliente, Producto, Vendedor, Factura, ClienteProducto
 from decimal import Decimal
 from django.shortcuts import redirect
 from django.http import HttpResponseNotAllowed
 from django.contrib import messages
-
-
+import json
 
 # ======= Clientes =======
 class ClienteListView(ListView):
@@ -64,50 +63,63 @@ class FacturasView(TemplateView):
 class ProductosView(TemplateView):
     template_name = "comisiones/productos.html"
 
-class VendedorView(TemplateView):
+class VendedorView(View):
     template_name = "comisiones/vendedor.html"
-    # Lista de vendedores ordenada
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['vendedores'] = Vendedor.objects.all().order_by('nombre')  
-        return context
-    
+
+    def get(self, request, *args, **kwargs):
+        """
+        Maneja la solicitud GET para cargar la página con la lista de vendedores.
+        """
+        vendedores = Vendedor.objects.all().order_by('nombre')
+        return render(request, self.template_name, {'vendedores': vendedores})
+
     def post(self, request, *args, **kwargs):
+        """
+        Maneja la solicitud POST para agregar un nuevo vendedor.
+        """
         if 'agregar_vendedor' in request.POST:
             nombre = request.POST.get('nombre')
             if nombre:
                 if Vendedor.objects.filter(nombre__iexact=nombre).exists():
-                    messages.error(request, f"El vendedor '{nombre}' ya existe.")  
+                    messages.error(request, f"El vendedor '{nombre}' ya existe.")
                 else:
                     Vendedor.objects.create(nombre=nombre)
-                    messages.success(request, f"Vendedor '{nombre}' agregado con éxito.") 
+                    messages.success(request, f"Vendedor '{nombre}' agregado con éxito.")
             return redirect('vendedor')
-        
-        elif 'editar_vendedor' in request.POST:
-            vendedor_id = request.POST.get('id')
-            nombre = request.POST.get('nombre')
-            if vendedor_id and nombre:
-                try:
-                    vendedor = Vendedor.objects.get(id=vendedor_id)
-                    vendedor.nombre = nombre
-                    vendedor.save()
-                    messages.success(request, f"Vendedor '{nombre}' actualizado con éxito.")
-                except Vendedor.DoesNotExist:
-                    messages.error(request, "El vendedor no existe.")
-            return redirect('vendedor')
-        
-        elif 'eliminar_vendedor' in request.POST:
-            vendedor_id = request.POST.get('id')
-            if vendedor_id:
-                try:
-                    vendedor = Vendedor.objects.get(id=vendedor_id)
-                    vendedor.delete()
-                    messages.success(request, "Vendedor eliminado con éxito.")
-                except Vendedor.DoesNotExist:
-                    messages.error(request, "El vendedor no existe.")
-            return redirect('vendedor')
-        
         return HttpResponseNotAllowed(['POST'])
+
+    def put(self, request, *args, **kwargs):
+        """
+        Maneja la solicitud PUT para actualizar un vendedor.
+        """
+        vendedor_id = kwargs.get('id')
+        data = json.loads(request.body.decode('utf-8'))
+        nombre = data.get('nombre')
+
+        if vendedor_id and nombre:
+            try:
+                vendedor = Vendedor.objects.get(id=vendedor_id)
+                vendedor.nombre = nombre
+                vendedor.save()
+                return JsonResponse({'message': 'Vendedor actualizado exitosamente.'}, status=200)
+            except Vendedor.DoesNotExist:
+                return JsonResponse({'error': 'El vendedor no existe.'}, status=404)
+        return JsonResponse({'error': 'Datos incompletos para actualizar el vendedor.'}, status=400)
+
+    def delete(self, request, *args, **kwargs):
+        """
+        Maneja la solicitud DELETE para eliminar un vendedor.
+        """
+        vendedor_id = kwargs.get('id')
+
+        if vendedor_id:
+            try:
+                vendedor = Vendedor.objects.get(id=vendedor_id)
+                vendedor.delete()
+                return JsonResponse({'message': 'Vendedor eliminado exitosamente.'}, status=200)
+            except Vendedor.DoesNotExist:
+                return JsonResponse({'error': 'El vendedor no existe.'}, status=404)
+        return JsonResponse({'error': 'ID del vendedor no proporcionado.'}, status=400)
 
 class VentasView(TemplateView):
     template_name = "comisiones/ventas.html"

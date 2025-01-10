@@ -2,13 +2,13 @@
 {% extends 'comisiones/base.html' %}
 
 {% block title %}Vendedores{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
     <h1>Lista de Vendedores</h1>
-</div>
-    <!-- Mostrar mensajes -->
+
     {% if messages %}
-    <div class="container mt-3">
+    <div class="mt-3">
         {% for message in messages %}
         <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} alert-dismissible fade show" role="alert">
             {{ message }}
@@ -17,44 +17,48 @@
         {% endfor %}
     </div>
     {% endif %}
+
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreate">Agregar Nuevo Vendedor</button>
+
     <ul class="list-group mt-3">
         {% for vendedor in vendedores %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 {{ vendedor.nombre }}
                 <div>
                     <button 
-                        class="btn btn-warning btn-sm" 
+                        class="btn btn-warning btn-sm editar-vendedor" 
                         data-bs-toggle="modal" 
                         data-bs-target="#modalUpdate" 
                         data-id="{{ vendedor.id }}" 
-                        data-nombre="{{ vendedor.nombre }}">Editar</button>
-
+                        data-nombre="{{ vendedor.nombre }}">
+                        Editar
+                    </button>
                     <button 
-                        class="btn btn-danger btn-sm" 
+                        class="btn btn-danger btn-sm eliminar-vendedor" 
                         data-bs-toggle="modal" 
                         data-bs-target="#modalDelete" 
-                        data-id="{{ vendedor.id }}">Eliminar</button>
+                        data-id="{{ vendedor.id }}"
+                        data-nombre="{{ vendedor.nombre }}">
+                        Eliminar
+                    </button>
                 </div>
             </li>
         {% endfor %}
     </ul>
 </div>
 
-<!-- Modal Agregar Vendedor -->
+<!-- Modal Crear -->
 <div class="modal fade" id="modalCreate" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalCreateLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="post" action="{% url 'vendedor' %}">
                 {% csrf_token %}
-                <!-- Campo oculto para identificar la acción -->
                 <input type="hidden" name="agregar_vendedor" value="1">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalCreateLabel">Agregar Nuevo Vendedor</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Campo Nombre -->
                     <div class="mb-3">
                         <label for="nombre" class="form-label">Nombre del Vendedor</label>
                         <input type="text" name="nombre" id="nombre" class="form-control" required>
@@ -69,78 +73,184 @@
     </div>
 </div>
 
-<!-- Modal para Editar -->
-<div class="modal fade" id="modalUpdate" tabindex="-1" aria-labelledby="modalUpdateLabel" aria-hidden="true">
+<!-- Modal Editar -->
+<div class="modal fade" id="modalUpdate" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalUpdateLabel" aria-hidden="true">
     <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalUpdateLabel">Editar Vendedor</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form method="post" action="{% url 'vendedor' %}">
-            {% csrf_token %}
-            <input type="hidden" name="editar_vendedor" value="1">
-            <input type="hidden" id="updateId" name="id">
-            <div class="mb-3">
-              <label for="updateNombre" class="form-label">Nombre</label>
-              <input type="text" class="form-control" id="updateNombre" name="nombre">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalUpdateLabel">Editar Vendedor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <button type="submit" class="btn btn-primary">Guardar cambios</button>
-          </form>
+            <div class="modal-body">
+                <input type="hidden" id="edit_vendedor_id">
+                <div class="mb-3">
+                    <label for="edit_nombre" class="form-label">Nombre del Vendedor</label>
+                    <input type="text" id="edit_nombre" class="form-control" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="actualizarVendedor()">Actualizar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
+</div>
 
-<!-- Modal Eliminar Vendedor -->
 <div class="modal fade" id="modalDelete" tabindex="-1" aria-labelledby="modalDeleteLabel" aria-hidden="true">
     <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalDeleteLabel">Eliminar Vendedor</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalDeleteLabel">Eliminar Vendedor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de que desea eliminar al vendedor "<span id="delete_vendedor_nombre"></span>"?</p>
+                <input type="hidden" id="delete_vendedor_id">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="eliminarVendedor()">Eliminar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
         </div>
-        <div class="modal-body">
-          <p>¿Estás seguro de que deseas eliminar este vendedor?</p>
-          <form method="post" action="{% url 'vendedor' %}">
-            {% csrf_token %}
-            <input type="hidden" name="eliminar_vendedor" value="1">
-            <input type="hidden" id="deleteId" name="id">
-            <button type="submit" class="btn btn-danger">Eliminar</button>
-          </form>
-        </div>
-      </div>
     </div>
-  </div>
 </div>
+
 {% endblock %}
 
+{% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-      var modalUpdate = document.getElementById('modalUpdate');
-      var modalDelete = document.getElementById('modalDelete');
-    
-      modalUpdate.addEventListener('show.bs.modal', function(event) {
-        var button = event.relatedTarget;
-        var id = button.getAttribute('data-id');
-        var nombre = button.getAttribute('data-nombre');
-    
-        var modalTitle = modalUpdate.querySelector('.modal-title');
-        var inputId = modalUpdate.querySelector('#updateId');
-        var inputNombre = modalUpdate.querySelector('#updateNombre');
-    
-        modalTitle.textContent = 'Editar Vendedor: ' + nombre;
-        inputId.value = id;
-        inputNombre.value = nombre;
-      });
-    
-      modalDelete.addEventListener('show.bs.modal', function(event) {
-        var button = event.relatedTarget;
-        var id = button.getAttribute('data-id');
-    
-        var inputId = modalDelete.querySelector('#deleteId');
-        inputId.value = id;
-      });
+        // Obtener CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        // Inicializar modales de Bootstrap
+        const editModal = new bootstrap.Modal(document.getElementById('modalUpdate'));
+        const deleteModal = new bootstrap.Modal(document.getElementById('modalDelete'));
+
+        // Configurar modal de edición
+        document.querySelectorAll('.editar-vendedor').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const id = this.getAttribute('data-id');
+                const nombre = this.getAttribute('data-nombre');
+                const editIdInput = document.getElementById('edit_vendedor_id');
+                const editNombreInput = document.getElementById('edit_nombre');
+
+                if (editIdInput && editNombreInput) {
+                    editIdInput.value = id;
+                    editNombreInput.value = nombre;
+                }
+            });
+        });
+
+        // Configurar modal de eliminación
+        document.querySelectorAll('.eliminar-vendedor').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const id = this.getAttribute('data-id');
+                const nombre = this.getAttribute('data-nombre');
+                const deleteIdInput = document.getElementById('delete_vendedor_id');
+                const deleteNombreSpan = document.getElementById('delete_vendedor_nombre');
+
+                if (deleteIdInput && deleteNombreSpan) {
+                    deleteIdInput.value = id;
+                    deleteNombreSpan.textContent = nombre;
+                }
+            });
+        });
+
+        // Función para mostrar mensajes de error/éxito
+        function mostrarMensaje(mensaje, esError = false) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${esError ? 'danger' : 'success'} alert-dismissible fade show`;
+            alertDiv.role = 'alert';
+            alertDiv.innerHTML = `
+                ${mensaje}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.list-group'));
+        }
+
+        // Función para actualizar vendedor
+        window.actualizarVendedor = async function() {
+            const id = document.getElementById('edit_vendedor_id').value;
+            const nombre = document.getElementById('edit_nombre').value;
+            
+            if (!nombre.trim()) {
+                mostrarMensaje('El nombre del vendedor no puede estar vacío', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/vendedor/${id}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken,
+                    },
+                    body: JSON.stringify({
+                        nombre: nombre.trim()
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    editModal.hide();
+                    window.location.reload();
+                } else {
+                    mostrarMensaje(data.error || 'Error al actualizar el vendedor', true);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarMensaje('Error al actualizar el vendedor', true);
+            }
+        };
+
+        // Función para eliminar vendedor
+        window.eliminarVendedor = async function() {
+            const id = document.getElementById('delete_vendedor_id').value;
+            
+            if (!id) {
+                mostrarMensaje('ID de vendedor no válido', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/vendedor/${id}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    deleteModal.hide();
+                    window.location.reload();
+                } else {
+                    mostrarMensaje(data.error || 'Error al eliminar el vendedor', true);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarMensaje('Error al eliminar el vendedor', true);
+            }
+        };
     });
-    </script>
+</script>
+{% endblock %}

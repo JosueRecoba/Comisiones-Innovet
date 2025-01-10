@@ -1,28 +1,25 @@
-from django.urls import path
+from django.urls import path, include
+from django.shortcuts import redirect
 from . import views
 from .views import (
     ClienteListView, ClienteDetailView, ClienteCreateView, 
     ClienteUpdateView, ClienteDeleteView, 
     calcular_comisiones, DashboardView,
     ComprasView, VentasView, VendedorView, 
-    FacturasView, ClienteProductoView, ProductosView
+    FacturasView, ClienteProductoView, ProductosView, 
+    
 )
 
 urlpatterns = [
-    
     # --------------------- URLs de Dashboard ---------------------
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
 
     # --------------------- URLs de Vendedor ---------------------
     path('vendedor/', VendedorView.as_view(), name='vendedor'),
-
+    path('vendedor/<int:id>/', VendedorView.as_view(), name='vendedor_detalle'),
+    
     # --------------------- URLs de Clientes ---------------------
     path('clientes/', ClienteListView.as_view(), name='cliente-list'),
-    path('clientes/<int:pk>/', ClienteDetailView.as_view(), name='cliente-detail'),
-    path('clientes/nuevo/', ClienteCreateView.as_view(), name='cliente-create'),
-    path('clientes/<int:pk>/editar/', ClienteUpdateView.as_view(), name='cliente-update'),
-    path('clientes/<int:pk>/eliminar/', ClienteDeleteView.as_view(), name='cliente-delete'),
-    
     
     # --------------------- URLs de Productos ---------------------
     path('productos/', ProductosView.as_view(), name='productos'),
